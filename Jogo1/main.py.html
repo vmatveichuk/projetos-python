@@ -1,0 +1,388 @@
+<html>
+<head>
+    <title>main.py</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6897bb;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+
+    </style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060">
+    <tr>
+        <td>
+            <center>
+                <font face="Arial, Helvetica" color="#000000">
+                    main.py</font>
+            </center>
+        </td>
+    </tr>
+</table>
+<pre><span class="s0">import </span><span class="s1">pygame</span><span class="s0">, </span><span
+        class="s1">sys</span><span class="s0">, </span><span class="s1">random</span>
+<span class="s0">from </span><span class="s1">pygame </span><span class="s0">import </span><span class="s1">mixer</span>
+
+
+<span class="s0">def </span><span class="s1">draw_floor():</span>
+    <span class="s1">screen.blit(floor_surface</span><span class="s0">, </span><span class="s1">(floor_x_pos</span><span
+            class="s0">, </span><span class="s2">900</span><span class="s1">))</span>
+    <span class="s1">screen.blit(floor_surface</span><span class="s0">, </span><span
+            class="s1">(floor_x_pos + </span><span class="s2">576</span><span class="s0">, </span><span
+            class="s2">900</span><span class="s1">))</span>
+
+
+<span class="s0">def </span><span class="s1">create_enemy():</span>
+    <span class="s1">random_enemy_pos = random.choice(enemy_height)</span>
+    <span class="s1">random_enemy_pos_2 = random.choice(enemy_height2)</span>
+    <span class="s1">new_enemy = enemy_surface.get_rect(center=(</span><span class="s2">700</span><span
+            class="s0">, </span><span class="s1">random_enemy_pos))</span>
+    <span class="s1">top_enemy = enemy_surface.get_rect(center=(</span><span class="s2">576</span><span
+            class="s0">, </span><span class="s1">random_enemy_pos_2))</span>
+    <span class="s0">return </span><span class="s1">new_enemy</span><span class="s0">, </span><span
+            class="s1">top_enemy</span>
+
+
+<span class="s0">def </span><span class="s1">move_enemies(enemies):</span>
+    <span class="s0">for </span><span class="s1">enemy </span><span class="s0">in </span><span
+            class="s1">enemies:</span>
+        <span class="s1">enemy.centerx -= </span><span class="s2">5</span>
+    <span class="s0">return </span><span class="s1">enemies</span>
+
+
+<span class="s0">def </span><span class="s1">draw_enemies(enemies):</span>
+    <span class="s0">for </span><span class="s1">enemy </span><span class="s0">in </span><span
+            class="s1">enemies:</span>
+        <span class="s1">screen.blit(enemy_surface</span><span class="s0">, </span><span class="s1">enemy)</span>
+
+
+<span class="s0">def </span><span class="s1">check_collision(enemies):</span>
+    <span class="s0">for </span><span class="s1">enemy </span><span class="s0">in </span><span
+            class="s1">enemies:</span>
+        <span class="s0">if </span><span class="s1">ship_rect.colliderect(enemy):</span>
+            <span class="s1">death_sound.play()</span>
+            <span class="s0">return False</span>
+
+    <span class="s0">if </span><span class="s1">ship_rect.top &lt;= -</span><span class="s2">100 </span><span
+            class="s0">or </span><span class="s1">ship_rect.bottom &gt;= </span><span class="s2">900</span><span
+            class="s1">:</span>
+        <span class="s1">death_sound.play()</span>
+        <span class="s0">return False</span>
+
+    <span class="s0">return True</span>
+
+
+<span class="s0">def </span><span class="s1">ship_animation():</span>
+    <span class="s1">new_ship = ship_frames[ship_index]</span>
+    <span class="s1">new_ship_rect = new_ship.get_rect(center=(</span><span class="s2">100</span><span
+            class="s0">, </span><span class="s1">ship_rect.centery))</span>
+    <span class="s0">return </span><span class="s1">new_ship</span><span class="s0">, </span><span class="s1">new_ship_rect</span>
+
+
+<span class="s0">def </span><span class="s1">game_over_animation():</span>
+    <span class="s1">new_game_over = game_over_frames[game_over_index]</span>
+    <span class="s1">new_game_over_rect = new_game_over.get_rect(center=(</span><span class="s2">288</span><span
+            class="s0">, </span><span class="s2">512</span><span class="s1">))</span>
+    <span class="s0">return </span><span class="s1">new_game_over</span><span class="s0">, </span><span class="s1">new_game_over_rect</span>
+
+
+<span class="s0">def </span><span class="s1">enemy_animation(enemies):</span>
+    <span class="s0">for </span><span class="s1">enemy </span><span class="s0">in </span><span
+            class="s1">enemies:</span>
+        <span class="s1">new_enemy = enemy_frames[enemy_index]</span>
+        <span class="s1">New_enemy_rect = new_enemy.get_rect(center=(</span><span class="s2">700</span><span class="s0">, </span><span
+            class="s1">new_enemy_rect.centery))</span>
+
+    <span class="s0">return </span><span class="s1">new_enemy</span><span class="s0">, </span><span class="s1">new_enemy_rect</span>
+
+
+<span class="s0">def </span><span class="s1">score_display(game_state):</span>
+    <span class="s0">if </span><span class="s1">game_state == </span><span class="s3">'main_game'</span><span
+            class="s1">:</span>
+        <span class="s1">score_surface = game_font.render(str(int(score))</span><span class="s0">, True, </span><span
+            class="s1">(</span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span
+            class="s0">, </span><span class="s2">255</span><span class="s1">))</span>
+        <span class="s1">score_rect = score_surface.get_rect(center=(</span><span class="s2">288</span><span class="s0">, </span><span
+            class="s2">100</span><span class="s1">))</span>
+        <span class="s1">screen.blit(score_surface</span><span class="s0">, </span><span class="s1">score_rect)</span>
+    <span class="s0">if </span><span class="s1">game_state == </span><span class="s3">'game_over'</span><span
+            class="s1">:</span>
+        <span class="s1">score_surface = game_font.render(</span><span class="s3">f'score </span><span
+            class="s0">{</span><span class="s1">int(score)</span><span class="s0">}</span><span class="s3">'</span><span
+            class="s0">, True, </span><span class="s1">(</span><span class="s2">255</span><span
+            class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span
+            class="s1">))</span>
+        <span class="s1">score_rect = score_surface.get_rect(center=(</span><span class="s2">288</span><span class="s0">, </span><span
+            class="s2">100</span><span class="s1">))</span>
+        <span class="s1">screen.blit(score_surface</span><span class="s0">, </span><span class="s1">score_rect)</span>
+
+        <span class="s1">high_score_surface = game_font.render(</span><span class="s3">f'High Score </span><span
+            class="s0">{</span><span class="s1">int(high_score)</span><span class="s0">}</span><span class="s3">'</span><span
+            class="s0">, True, </span><span class="s1">(</span><span class="s2">255</span><span
+            class="s0">, </span><span class="s2">255</span><span class="s0">, </span><span class="s2">255</span><span
+            class="s1">))</span>
+        <span class="s1">high_score_rect = high_score_surface.get_rect(center=(</span><span class="s2">288</span><span
+            class="s0">, </span><span class="s2">850</span><span class="s1">))</span>
+        <span class="s1">screen.blit(high_score_surface</span><span class="s0">, </span><span class="s1">high_score_rect)</span>
+
+
+<span class="s0">def </span><span class="s1">update_score(score</span><span class="s0">, </span><span class="s1">high_score):</span>
+    <span class="s0">if </span><span class="s1">score &gt; high_score:</span>
+        <span class="s1">high_score = score</span>
+    <span class="s0">return </span><span class="s1">high_score</span>
+
+
+<span class="s1">pygame.mixer.pre_init(frequency=</span><span class="s2">44100</span><span class="s0">, </span><span
+            class="s1">size=-</span><span class="s2">16</span><span class="s0">, </span><span
+            class="s1">channels=</span><span class="s2">2</span><span class="s0">, </span><span
+            class="s1">buffer=</span><span class="s2">512</span><span class="s1">)</span>
+<span class="s1">pygame.init()</span>
+<span class="s1">screen = pygame.display.set_mode((</span><span class="s2">576</span><span class="s0">, </span><span
+            class="s2">1024</span><span class="s1">))</span>
+<span class="s1">clock = pygame.time.Clock()</span>
+<span class="s1">game_font = pygame.font.Font(</span><span class="s3">'assets\Games.ttf'</span><span
+            class="s0">, </span><span class="s2">40</span><span class="s1">)</span>
+
+<span class="s4"># Game Variables</span>
+<span class="s1">gravity = </span><span class="s2">0.25</span>
+<span class="s1">ship_moviment = </span><span class="s2">0</span>
+<span class="s1">game_active = </span><span class="s0">True</span>
+<span class="s1">score = </span><span class="s2">0</span>
+<span class="s1">high_score = </span><span class="s2">0</span>
+<span class="s1">enemy_height = [</span><span class="s2">100</span><span class="s0">, </span><span class="s2">300</span><span
+            class="s0">, </span><span class="s2">200</span><span class="s1">]</span>
+<span class="s1">enemy_height2 = [</span><span class="s2">400</span><span class="s0">, </span><span
+            class="s2">500</span><span class="s0">, </span><span class="s2">600</span><span class="s1">]</span>
+
+<span class="s1">bg_surface = pygame.image.load(</span><span class="s3">'assets/background-day.jpeg'</span><span
+            class="s1">).convert()</span>
+<span class="s1">bg_surface = pygame.transform.scale(bg_surface</span><span class="s0">, </span><span
+            class="s1">(</span><span class="s2">576</span><span class="s0">, </span><span class="s2">1024</span><span
+            class="s1">))</span>
+
+<span class="s1">floor_surface = pygame.image.load(</span><span class="s3">'assets/base.png'</span><span class="s1">).convert()</span>
+<span class="s1">floor_surface = pygame.transform.scale2x(floor_surface)</span>
+<span class="s1">floor_x_pos = </span><span class="s2">0</span>
+
+<span class="s1">ship_downflight = pygame.image.load(</span><span class="s3">'assets/nave_1.png'</span><span class="s1">)</span>
+<span class="s1">ship_midflight = pygame.image.load(</span><span class="s3">'assets/nave_2.png'</span><span
+            class="s1">)</span>
+<span class="s1">ship_upflight = pygame.image.load(</span><span class="s3">'assets/nave_3.png'</span><span
+            class="s1">)</span>
+<span class="s1">ship_frames = [ship_downflight</span><span class="s0">, </span><span
+            class="s1">ship_midflight</span><span class="s0">, </span><span class="s1">ship_upflight]</span>
+<span class="s1">ship_index = </span><span class="s2">0</span>
+<span class="s1">ship_surface = ship_frames[ship_index]</span>
+<span class="s1">ship_rect = ship_surface.get_rect(center=(</span><span class="s2">100</span><span
+            class="s0">, </span><span class="s2">512</span><span class="s1">))</span>
+
+<span class="s1">shipflight = pygame.USEREVENT + </span><span class="s2">3</span>
+<span class="s1">pygame.time.set_timer(shipflight</span><span class="s0">, </span><span class="s2">200</span><span
+            class="s1">)</span>
+
+<span class="s1">enemy_1 = pygame.image.load(</span><span class="s3">'assets/enemy1.png'</span><span class="s1">)</span>
+<span class="s1">enemy_1 = pygame.transform.scale(enemy_1</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_2 = pygame.image.load(</span><span class="s3">'assets/enemy2.png'</span><span class="s1">)</span>
+<span class="s1">enemy_2 = pygame.transform.scale(enemy_2</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_3 = pygame.image.load(</span><span class="s3">'assets/enemy3.png'</span><span class="s1">)</span>
+<span class="s1">enemy_3 = pygame.transform.scale(enemy_3</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_4 = pygame.image.load(</span><span class="s3">'assets/enemy4.png'</span><span class="s1">)</span>
+<span class="s1">enemy_4 = pygame.transform.scale(enemy_4</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_5 = pygame.image.load(</span><span class="s3">'assets/enemy5.png'</span><span class="s1">)</span>
+<span class="s1">enemy_5 = pygame.transform.scale(enemy_5</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_6 = pygame.image.load(</span><span class="s3">'assets/enemy6.png'</span><span class="s1">)</span>
+<span class="s1">enemy_6 = pygame.transform.scale(enemy_6</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_7 = pygame.image.load(</span><span class="s3">'assets/enemy7.png'</span><span class="s1">)</span>
+<span class="s1">enemy_7 = pygame.transform.scale(enemy_7</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_8 = pygame.image.load(</span><span class="s3">'assets/enemy8.png'</span><span class="s1">)</span>
+<span class="s1">enemy_8 = pygame.transform.scale(enemy_8</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_9 = pygame.image.load(</span><span class="s3">'assets/enemy9.png'</span><span class="s1">)</span>
+<span class="s1">enemy_9 = pygame.transform.scale(enemy_9</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span class="s1">))</span>
+<span class="s1">enemy_10 = pygame.image.load(</span><span class="s3">'assets/enemy10.png'</span><span
+            class="s1">)</span>
+<span class="s1">enemy_10 = pygame.transform.scale(enemy_10</span><span class="s0">, </span><span
+            class="s1">(</span><span class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span
+            class="s1">))</span>
+<span class="s1">enemy_11 = pygame.image.load(</span><span class="s3">'assets/enemy11.png'</span><span
+            class="s1">)</span>
+<span class="s1">enemy_11 = pygame.transform.scale(enemy_11</span><span class="s0">, </span><span
+            class="s1">(</span><span class="s2">130</span><span class="s0">, </span><span class="s2">102</span><span
+            class="s1">))</span>
+<span class="s1">enemy_frames = [enemy_1</span><span class="s0">, </span><span class="s1">enemy_2</span><span
+            class="s0">, </span><span class="s1">enemy_3</span><span class="s0">, </span><span class="s1">enemy_4</span><span
+            class="s0">, </span><span class="s1">enemy_5</span><span class="s0">, </span><span class="s1">enemy_6</span><span
+            class="s0">, </span><span class="s1">enemy_7</span><span class="s0">, </span><span class="s1">enemy_8</span><span
+            class="s0">, </span><span class="s1">enemy_9</span><span class="s0">, </span><span
+            class="s1">enemy_10</span><span class="s0">, </span><span class="s1">enemy_11]</span>
+<span class="s1">enemy_index = </span><span class="s2">0</span>
+<span class="s1">enemy_surface = enemy_frames[enemy_index]</span>
+<span class="s1">random_enemy_pos = random.choice(enemy_height)</span>
+<span class="s1">random_enemy_pos_2 = random.choice(enemy_height2)</span>
+<span class="s1">new_enemy_rect = enemy_surface.get_rect(center=(</span><span class="s2">700</span><span
+            class="s0">, </span><span class="s1">random_enemy_pos))</span>
+<span class="s1">top_enemy = enemy_surface.get_rect(center=(</span><span class="s2">500</span><span class="s0">, </span><span
+            class="s1">random_enemy_pos_2))</span>
+<span class="s1">enemy_surface = new_enemy_rect</span><span class="s0">, </span><span class="s1">top_enemy</span><span
+            class="s0">, </span><span class="s1">enemy_frames[enemy_index]</span>
+
+<span class="s1">ENEMY = pygame.USEREVENT + </span><span class="s2">2</span>
+<span class="s1">pygame.time.set_timer(ENEMY</span><span class="s0">, </span><span class="s2">100</span><span
+            class="s1">)</span>
+
+<span class="s1">enemy_list = []</span>
+<span class="s1">SPAWNenemy = pygame.USEREVENT</span>
+<span class="s1">enemy_timer = (</span><span class="s2">1000</span><span class="s0">, </span><span
+            class="s2">1500</span><span class="s0">, </span><span class="s2">800</span><span class="s0">, </span><span
+            class="s2">500</span><span class="s0">, </span><span class="s2">2000</span><span class="s1">)</span>
+<span class="s1">enemy_timer_bip = random.choice(enemy_timer)</span>
+<span class="s1">pygame.time.set_timer(SPAWNenemy</span><span class="s0">, </span><span
+            class="s1">enemy_timer_bip)</span>
+
+<span class="s1">game_over_1 = pygame.image.load(</span><span class="s3">'assets/gameover1.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_2 = pygame.image.load(</span><span class="s3">'assets/gameover2.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_3 = pygame.image.load(</span><span class="s3">'assets/gameover3.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_4 = pygame.image.load(</span><span class="s3">'assets/gameover4.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_5 = pygame.image.load(</span><span class="s3">'assets/gameover5.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_6 = pygame.image.load(</span><span class="s3">'assets/gameover6.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_7 = pygame.image.load(</span><span class="s3">'assets/gameover7.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_8 = pygame.image.load(</span><span class="s3">'assets/gameover8.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_9 = pygame.image.load(</span><span class="s3">'assets/gameover9.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_10 = pygame.image.load(</span><span class="s3">'assets/gameover8.png'</span><span class="s1">).convert_alpha()</span>
+<span class="s1">game_over_11 = pygame.image.load(</span><span class="s3">'assets/gameover11.png'</span><span
+            class="s1">).convert_alpha()</span>
+<span class="s1">game_over_frames = [game_over_1</span><span class="s0">, </span><span
+            class="s1">game_over_2</span><span class="s0">, </span><span class="s1">game_over_3</span><span
+            class="s0">, </span><span class="s1">game_over_4</span><span class="s0">, </span><span class="s1">game_over_5</span><span
+            class="s0">, </span><span class="s1">game_over_6</span><span class="s0">, </span><span class="s1">game_over_7</span><span
+            class="s0">,</span>
+                    <span class="s1">game_over_8</span><span class="s0">, </span><span
+            class="s1">game_over_9</span><span class="s0">, </span><span class="s1">game_over_10</span><span class="s0">, </span><span
+            class="s1">game_over_11]</span>
+<span class="s1">game_over_index = </span><span class="s2">0</span>
+<span class="s1">game_over_surface = game_over_frames[game_over_index]</span>
+<span class="s1">game_over_rect = game_over_surface.get_rect(center=(</span><span class="s2">288</span><span class="s0">, </span><span
+            class="s2">512</span><span class="s1">))</span>
+
+<span class="s1">GAMEOVER = pygame.USEREVENT + </span><span class="s2">1</span>
+<span class="s1">pygame.time.set_timer(GAMEOVER</span><span class="s0">, </span><span class="s2">200</span><span
+            class="s1">)</span>
+
+<span class="s1">death_sound = pygame.mixer.Sound(</span><span class="s3">'audio/death.wav'</span><span
+            class="s1">)</span>
+<span class="s1">alien = pygame.mixer.Sound(</span><span class="s3">'audio/alien.mp3'</span><span class="s1">)</span>
+<span class="s1">tiro = pygame.mixer.Sound(</span><span class="s3">'audio/Tiro.mp3'</span><span class="s1">)</span>
+<span class="s1">background = pygame.mixer.music.load(</span><span class="s3">'audio/background.mp3'</span><span
+            class="s1">)</span>
+
+
+<span class="s0">while True</span><span class="s1">:</span>
+    <span class="s0">for </span><span class="s1">event </span><span class="s0">in </span><span class="s1">pygame.event.get():</span>
+        <span class="s0">if </span><span class="s1">event.type == pygame.QUIT:</span>
+            <span class="s1">pygame.quit()</span>
+            <span class="s1">sys.exit()</span>
+
+        <span class="s0">if </span><span class="s1">event.type == pygame.KEYDOWN:</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_SPACE </span><span
+            class="s0">and </span><span class="s1">game_active:</span>
+                <span class="s1">ship_moviment = </span><span class="s2">0</span>
+                <span class="s1">ship_moviment -= </span><span class="s2">8</span>
+                <span class="s1">tiro.play()</span>
+            <span class="s0">if </span><span class="s1">event.key == pygame.K_SPACE </span><span
+            class="s0">and </span><span class="s1">game_active == </span><span class="s0">False</span><span
+            class="s1">:</span>
+                <span class="s1">game_active = </span><span class="s0">True</span>
+                <span class="s1">enemy_list.clear()</span>
+                <span class="s1">ship_rect.center = (</span><span class="s2">100</span><span class="s0">, </span><span
+            class="s2">512</span><span class="s1">)</span>
+                <span class="s1">ship_moviment = </span><span class="s2">0</span>
+                <span class="s1">score = </span><span class="s2">0</span>
+
+        <span class="s0">if </span><span class="s1">event.type == SPAWNenemy:</span>
+            <span class="s1">enemy_list.extend(create_enemy())</span>
+            <span class="s1">alien.play()</span>
+
+        <span class="s0">if </span><span class="s1">event.type == shipflight:</span>
+            <span class="s0">if </span><span class="s1">ship_index &lt; </span><span class="s2">2</span><span
+            class="s1">:</span>
+                <span class="s1">ship_index += </span><span class="s2">1</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">ship_index = </span><span class="s2">0</span>
+
+            <span class="s1">ship_surface</span><span class="s0">, </span><span
+            class="s1">ship_rect = ship_animation()</span>
+
+        <span class="s0">if </span><span class="s1">event.type == GAMEOVER:</span>
+            <span class="s0">if </span><span class="s1">game_over_index &lt; </span><span class="s2">10</span><span
+            class="s1">:</span>
+                <span class="s1">game_over_index += </span><span class="s2">1</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">game_over_index = </span><span class="s2">0</span>
+
+            <span class="s1">game_over_surface</span><span class="s0">, </span><span class="s1">game_over_rect = game_over_animation()</span>
+
+        <span class="s0">if </span><span class="s1">event.type == ENEMY:</span>
+            <span class="s1">enemies = enemy_surface</span><span class="s0">, </span><span
+            class="s1">new_enemy_rect</span><span class="s0">, </span><span class="s1">top_enemy</span>
+            <span class="s1">enemy_surface</span><span class="s0">, </span><span class="s1">new_enemy_rect = enemy_animation(enemies)</span>
+            <span class="s0">if </span><span class="s1">enemy_index &lt; </span><span class="s2">10</span><span
+            class="s1">:</span>
+                <span class="s1">enemy_index += </span><span class="s2">1</span>
+            <span class="s0">else</span><span class="s1">:</span>
+                <span class="s1">enemy_index = </span><span class="s2">0</span>
+
+    <span class="s1">screen.blit(bg_surface</span><span class="s0">, </span><span class="s1">(</span><span
+            class="s2">0</span><span class="s0">, </span><span class="s2">0</span><span class="s1">))</span>
+
+    <span class="s0">if </span><span class="s1">game_active </span><span class="s0">is True</span><span
+            class="s1">:</span>
+
+        <span class="s4"># ship moviment</span>
+        <span class="s1">ship_moviment += gravity</span>
+        <span class="s1">rotated_ship = ship_surface</span>
+        <span class="s1">ship_rect.centery += ship_moviment</span>
+        <span class="s1">screen.blit(ship_surface</span><span class="s0">, </span><span class="s1">ship_rect)</span>
+        <span class="s1">game_active = check_collision(enemy_list)</span>
+
+        <span class="s4"># Enemies</span>
+        <span class="s1">enemy_list = move_enemies(enemy_list)</span>
+        <span class="s1">draw_enemies(enemy_list)</span>
+
+        <span class="s1">score += </span><span class="s2">0.01</span>
+        <span class="s1">score_display(</span><span class="s3">'main_game'</span><span class="s1">)</span>
+
+
+
+    <span class="s0">else</span><span class="s1">:</span>
+        <span class="s1">screen.blit(game_over_surface</span><span class="s0">, </span><span
+            class="s1">game_over_rect)</span>
+        <span class="s1">high_score = update_score(score</span><span class="s0">, </span><span
+            class="s1">high_score)</span>
+        <span class="s1">score_display(</span><span class="s3">'game_over'</span><span class="s1">)</span>
+        <span class="s1">tiro.stop()</span>
+        <span class="s1">alien.stop()</span>
+        <span class="s1">mixer.music.play(-</span><span class="s2">1</span><span class="s1">)</span>
+
+    <span class="s4"># floor</span>
+    <span class="s1">floor_x_pos -= </span><span class="s2">1</span>
+    <span class="s1">draw_floor()</span>
+    <span class="s0">if </span><span class="s1">floor_x_pos &lt;= -</span><span class="s2">576</span><span
+            class="s1">:</span>
+        <span class="s1">floor_x_pos = </span><span class="s2">0</span>
+
+    <span class="s1">pygame.display.update()</span>
+    <span class="s1">clock.tick(</span><span class="s2">120</span><span class="s1">)</span>
+</pre>
+</body>
+</html>
